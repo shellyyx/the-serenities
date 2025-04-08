@@ -332,10 +332,20 @@ this.bgMusic.play();
           yoyo: true,
           duration: 2000,
           repeat: -1,
+          onStart: () => {
+            if (enemy.active) enemy.play("autarchGuardIdle", true);
+          },
+          onYoyo: () => {
+            if (enemy.active) enemy.play("autarchGuardIdle", true);
+          },
+          onRepeat: () => {
+            if (enemy.active){ 
+              enemy.play("autarchGuardIdle", true);
+            }
+          },
           onUpdate: () => {
             if (!enemy.active) {
               this.tweens.getTweensOf(enemy).forEach((tween) => tween.stop());
-              this.healthBar.update();
             }
           },
         });
