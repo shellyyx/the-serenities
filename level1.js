@@ -6,8 +6,6 @@ class level1 extends Phaser.Scene {
 
   }
 
-  
-
   preload() {
     this.load.tilemapTiledJSON("level1", "assets/cyberpunkCity64x64.json");
 
@@ -305,10 +303,10 @@ this.bgMusic.play();
         const enemy = this.enemyGroup
           .create(enemyConfig.spawn.x, enemyConfig.spawn.y, "autarchGuard")
           .setScale(1.5)
-          .play("autarchGuardIdle", true)
+          // .play("autarchGuardIdle", true)
           .setCollideWorldBounds(true)
           .setSize(40, 70)
-        .setOffset(5, 10)
+          .setOffset(5, 10)
           .setOrigin(0.5, 1)
           .refreshBody();
 
@@ -318,6 +316,12 @@ this.bgMusic.play();
           currentHealth: enemy.health,
           maxHealth: enemy.health,
         };
+
+        // create healthBar object
+        if (enemy.active){
+          enemy.healthBar = new HealthBar(this, enemy, enemy.enemyStats);
+          enemy.healthBar.startEnemyUpdater(enemy,this, enemy.healthBar);
+        }
 
         this[`enemy${index + 1}`] = enemy;
 
@@ -331,6 +335,7 @@ this.bgMusic.play();
           onUpdate: () => {
             if (!enemy.active) {
               this.tweens.getTweensOf(enemy).forEach((tween) => tween.stop());
+              this.healthBar.update();
             }
           },
         });
@@ -403,8 +408,9 @@ this.bgMusic.play();
       });
 
       this.time.delayedCall(1000, () => {
+        if (!enemy.active) {return;}
         enemy.play("autarchGuardIdle", true);
-      });
+      }, null, this);
 
       if (this.health <= 0) {
         console.log("Player defeated! Game Over...");
@@ -735,7 +741,6 @@ if (this.player.x < this.robot.x) {
   }
 
   update() {
-
     // collectables n door destroy
     if (this.score >= 20 && this.health >= 100 && !this.door1.destroyed){
       this.door1.destroyed = true; // Set flag to true
@@ -962,7 +967,15 @@ if (this.player.x < this.robot.x) {
         attack.destroy();
 
         if (enemy.health === undefined) enemy.health = 5;
-        enemy.health -= 1; //do dmg
+        enemy.health -= 1; //do dmg to enemy
+
+        // visual update to hp bar 
+        if (enemy.healthBar){
+          enemy.enemyStats = {
+            currentHealth: enemy.health,
+            maxHealth: 5
+          };
+        }
 
         // Visual feedback for enemy
         enemy.setTint(0xff0000);

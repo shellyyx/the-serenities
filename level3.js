@@ -186,7 +186,7 @@ class level3 extends Phaser.Scene {
         const enemy = this.enemyGroup
           .create(enemyConfig.spawn.x, enemyConfig.spawn.y, "autarchGuard")
           .setScale(1.5)
-          .play("autarchGuardIdle", true)
+          // .play("autarchGuardIdle", true)
           .setCollideWorldBounds(true)
           .setSize(40, 70)
         .setOffset(5, 10)
@@ -202,6 +202,12 @@ class level3 extends Phaser.Scene {
 
         this[`enemy${index + 1}`] = enemy;
 
+        // create healthBar object
+        if (enemy.active){
+          enemy.healthBar = new HealthBar(this, enemy, enemy.enemyStats);
+          enemy.healthBar.startEnemyUpdater(enemy,this, enemy.healthBar);
+        };
+        
         this.tweens.add({
           targets: enemy,
           x: enemyConfig.spawn.x - enemyConfig.patrolDistance,
@@ -216,7 +222,9 @@ class level3 extends Phaser.Scene {
             if (enemy.active) enemy.play("autarchGuardIdle", true);
           },
           onRepeat: () => {
-            if (enemy.active) enemy.play("autarchGuardIdle", true);
+            if (enemy.active){ 
+              enemy.play("autarchGuardIdle", true);
+            }
           },
           onUpdate: () => {
             if (!enemy.active) {
@@ -236,7 +244,7 @@ class level3 extends Phaser.Scene {
       if (enemy.isFinalBoss) return;
       if (this.playerInvulnerable) return;
       
-      // Grant them protection for cooldown
+      // Make player temporarily invulnerable
       this.playerInvulnerable = true;
 
       // 0.5s of cooldown
@@ -294,8 +302,9 @@ class level3 extends Phaser.Scene {
 
       this.time.delayedCall(1000, () => {
         if (enemy.isFinalBoss){return;}
+        if (!enemy.active) {return;}
         enemy.play("autarchGuardIdle", true);
-      });
+      }, null, this);
 
       if (this.health <= 0) {
         console.log("Player defeated! Game Over...");
@@ -391,6 +400,14 @@ class level3 extends Phaser.Scene {
           if (enemy.health === undefined) enemy.health = 5;
           enemy.health -= 1; //do dmg to enemy
 
+          // visual update to hp bar 
+          if (enemy.healthBar){
+            enemy.enemyStats = {
+              currentHealth: enemy.health,
+              maxHealth: 5
+            };
+          }
+
           // Visual feedback for enemy
           enemy.setTint(0xff0000);
           this.eDamageSfx.play()
@@ -428,7 +445,7 @@ class level3 extends Phaser.Scene {
               console.log(`Boss hit! Remaining health: ${enemy.health}`);
               // Set flag for victory screen if boss is defeated
               if (enemy.health <= 0) {
-                // Boss defeated screen (fixed)
+                //defeated boss!! yippie!!!
                 console.log("boss defeated screen");
                 window.bossDefeated = true;
 
@@ -1151,7 +1168,7 @@ class level3 extends Phaser.Scene {
 
         console.log(`Enemy hit! Remaining health: ${enemy.health}`);
 
-        // Destroying enemy model
+        //destroying enemy model
         if (enemy.health <= 0) {
           // FIXED: Proper destruction sequence
           this.tweens.getTweensOf(enemy).forEach((tween) => tween.stop());

@@ -214,7 +214,7 @@ this.bgMusic = this.sound.add("bgmusic",{loop: true}).setVolume(0.5);
       const enemy = this.enemyGroup
         .create(point.x, point.y, "autarchGuard")
         .setScale(1.5)
-        .play("autarchGuardIdle", true)
+        // .play("autarchGuardIdle", true)
         .setCollideWorldBounds(true)
         .setSize(40, 70)
         .setOffset(5, 10)
@@ -226,6 +226,12 @@ this.bgMusic = this.sound.add("bgmusic",{loop: true}).setVolume(0.5);
       enemy.enemyStats = {
         currentHealth: enemy.health,
         maxHealth: enemy.health,
+      };
+
+      // create healthBar object
+      if (enemy.active){
+        enemy.healthBar = new HealthBar(this, enemy, enemy.enemyStats);
+        enemy.healthBar.startEnemyUpdater(enemy,this, enemy.healthBar);
       };
 
       // Store reference to specific enemies
@@ -521,7 +527,7 @@ this.bgMusic = this.sound.add("bgmusic",{loop: true}).setVolume(0.5);
       window.heart = this.health;
       updateInventory.call(this);
 
-      // Grant them protection for cooldown
+      //grant them super armour
       this.playerInvulnerable = true;
 
       // 0.5s of cooldown
@@ -572,8 +578,9 @@ this.bgMusic = this.sound.add("bgmusic",{loop: true}).setVolume(0.5);
       });
 
       this.time.delayedCall(1000, () => {
+        if (!enemy.active) {return;}
         enemy.play("autarchGuardIdle", true);
-      });
+      }, null, this);
 
       if (this.health <= 0) {
         console.log("Player defeated! Game Over...");
@@ -1134,18 +1141,7 @@ this.bgMusic = this.sound.add("bgmusic",{loop: true}).setVolume(0.5);
       this.player.setTint(0xff0000);
       this.cameras.main.shake(200, 0.01);
       updateInventory.call(this);
-      
-      // Check if player is defeated
-      if (this.health <= 0) {
-        console.log("Player defeated! Game Over...");
-        // Save current level for respawn
-        window.currentLevel = "level2";
-        this.lostSfx.play()
-        this.bgMusic.stop(); 
-        // Transition to game over scene
-        this.scene.start("gameOver");
-        return;
-      }
+      this.respawnPlayer();
     }
 
     if (this.lastX !== this.player.x || this.lastY !== this.player.y) {
@@ -1385,7 +1381,15 @@ this.bgMusic = this.sound.add("bgmusic",{loop: true}).setVolume(0.5);
         attack.destroy();
 
         if (enemy.health === undefined) enemy.health = 5;
-        enemy.health -= 1; //do dmg
+        enemy.health -= 1; //do dmg to enemy
+
+        // visual update to hp bar 
+        if (enemy.healthBar){
+          enemy.enemyStats = {
+            currentHealth: enemy.health,
+            maxHealth: 5
+          };
+        }
 
         // Visual feedback for enemy
         enemy.setTint(0xff0000);

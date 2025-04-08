@@ -131,13 +131,13 @@ class main extends Phaser.Scene {
     ];
     
     this.currentScreen = 0;
-    
+
     // Create animation for the start screen with ping-pong effect for smooth looping
     this.anims.create({
       key: "startAnimation",
       frames: [
         ...this.anims.generateFrameNumbers("startGif", { start: 0, end: 36 }),
-        ...this.anims.generateFrameNumbers("startGif", { start: 35, end: 1 }),
+        ...this.anims.generateFrameNumbers("startGif", { start: 35, end: 1 }).reverse()
       ],
       frameRate: 12,
       repeat: -1
@@ -154,8 +154,7 @@ class main extends Phaser.Scene {
       this.cameras.main.width / this.screenImage.width,
       this.cameras.main.height / this.screenImage.height
     );
-
-         
+      
     this.screenText = this.add
       .text(
         this.cameras.main.centerX,
@@ -209,22 +208,6 @@ class main extends Phaser.Scene {
       .setOrigin(0.5)
       .setVisible(false)
       .setDepth(10); // Ensure it appears above other elements
-
-      // Add title text at the top center of the start screen
-    this.nameText = this.add
-    .text(
-      this.cameras.main.centerX,
-      600 ,
-      "YAP XIN KAI (SHELLY) | RKL-CM2309007 | MA1",
-      {
-        fontFamily: '"Press Start 2P"',
-        fontSize: "20px",
-        fill: "#FFFFFF",
-      }
-    )
-    .setOrigin(0.5)
-    .setVisible(true)
-    .setDepth(10);
       
     // Check for spacebar or any key here
     var spaceDown = this.input.keyboard.addKey("SPACE");
@@ -249,7 +232,6 @@ class main extends Phaser.Scene {
               
             // Show the static instruction text for instruction screens
             this.instructionText.setVisible(true);
-            this.nameText.setVisible(false);
             
             // Stop text animations for instruction screens
             this.tweens.killTweensOf(this.screenText);
@@ -275,7 +257,8 @@ class main extends Phaser.Scene {
         } else {
           // Start the game
           console.log("Jump to level1 scene");
-          this.scene.start("level1", {});
+           this.scene.start("level1", {});
+          // this.scene.start("goodEnding", {}); //use this to enable good ending page quickly
         }
       },
       this
