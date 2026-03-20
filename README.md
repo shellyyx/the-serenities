@@ -1,1 +1,1 @@
-https://itxlinax.github.io/the-serenities/ to run the game
+https://shellyyx.github.io/the-serenities/ to run the game
